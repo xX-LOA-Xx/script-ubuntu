@@ -21,7 +21,7 @@
 
 >
     # override default of no subsystems
-    #Subsystem      sftp    /usr/lib/openssh/sftp-server
+   >#Subsystem      sftp    /usr/lib/openssh/sftp-server
     Subsystem sftp internal-sftp
 >
 
@@ -34,10 +34,10 @@
     #       AllowTcpForwarding no
     #       PermitTTY no
     #       ForceCommand cvs server
-    Match Group sftp_users
-    X11Forwarding no
-    AllowTcpForwarding no
-    ChrootDirectory /home
+    Match Group sftp_users  ## correspondance du groupe Utilisateur 
+    X11Forwarding no    ## translation X11 (interface graphique)
+    AllowTcpForwarding no   ## translation Tcp
+    ChrootDirectory /home   ## emplacement local
     ForceCommand internal-sftp
 >
 
@@ -47,7 +47,8 @@
     sudo systemctl restart ssh.service
 
 ##Etape 3 configuration des Groupes et Users
-##Now that you have defined your SFTP settings and set to match the sftp_users…. create a sftp_users group, then add users you want to restrict via chroot… To create the group, run the commands below…
+##maintenant que vous avez definit le SFTP et mis les correspondance, avec sftp_users.
+##créer un group d'utilisateur SFTP, puis ajouter les utilisateurs que vous voulez restreindre via CHROOT. Pour créer le groupe, lancer les commandes suivantes
 
     sudo groupadd sftp_users
 
@@ -55,7 +56,8 @@
 
     sudo usermod -aG sftp_users User_Name
 
-Replace user richard with your Ubuntu account name… this will add the user to the sftp_users group you created above…
-That’ it! Your system should be configured for secure SFTP for your users…
+##Remplacer l'utilisateur "User_Name" avec le nom correspondant a votre compte Ubuntu. cela va ajouter votre compte au groupe d'utilisateur SFTP_USERS que vous venez de créer au dessu.
+##tout est bon normalement, le system est configurer pour un serveur FTP securiser pour votre ou vos utilisateurs
+vous pouvez utiliser votre client FTP habituel comme exemple FilleZilla, pour vous connecter au serveur de maniere securiser PAR SFTP(port:22)
+
 Your user can use their favorite FTP client like Filezilla to connect to the server securely via SFTP protocol…. users will be restricted to their own directories and nowhere else..
-Make sure to selec SFTP connection in Filezilla…
