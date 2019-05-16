@@ -1,0 +1,61 @@
+## script adresse ip fixe serveur ubuntu 18.xx.xx
+
+sudo su 
+nano /etc/network/interfaces
+
+
+>######################################################################
+##example de fichier a ecrire
+    auto eth1
+    iface eth1 inet static
+        address 192.168.0.10
+        netmask 255.255.255.0
+        gateway 192.168.0.254
+>#######################################################################
+sudo /etc/init.d/networking restart 
+
+#######################################################################
+#######################################################################
+
+##ensuite configuration HTTPS APACHE2
+##La création d'un certificat auto-signé, sous Linux, est assez simple dès que l'on a installé le paquet openssl.
+
+    openssl req -new -x509 -days 365 -nodes -out /etc/ssl/certs/mailserver.crt -keyout /etc/ssl/private/mailserver.key
+
+##On précise ici que l'on veut un nouveau certificat, qui va durer 365 jours (sinon c'est 30 jours par défaut), de type X509, et le nom et l'emplacement des fichiers de certificat et de clé privé.
+##Cette commande va demander la saisie de plusieurs paramètres. Le plus important est le name (Common Name). Il faut mettre à ce niveau le nom complet du host. Par exemple pour un serveur accédé par l'URL webmail.mondomaine.com
+
+    Common Name (eg, YOUR name) [] : webmail.mondomaine.com
+
+##Remarque : il s'agit ici de certificat auto-signé. Généralement cela signifie que les navigateurs internet vont émettre une alerte de sécurité. Comme c'est pour un usage interne, on peut s'en satisfaire. Dans le cas d'un site public, il vaut mieux avoir un certificat signé par une autorité de confiance.
+##On sécurisé l'accès au fichier de clés privés :
+
+    chmod 440 /etc/ssl/private/mailserver.key
+
+##Activation du SSL pour apache
+##L'action se fait simplement par l'activation du module mod_ssl :
+    
+    a2enmod ssl
+
+##Création du Virtual Host
+##On va ensuite créer un virtual host pour notre URL, qui écoute sur le port 443:
+
+     vhost https
+    <VirtualHost *:443>
+        DocumentRoot /var/www/webmail
+        ServerName  webmail.mondomaine.com
+
+        ServerSignature Off
+        ErrorLog ${APACHE_LOG_DIR}/error_webmail.log      
+        LogLevel info      
+        CustomLog ${APACHE_LOG_DIR}/access_webmail.log combined      
+
+        SSLEngine on
+        SSLCertificateFile /etc/ssl/certs/mailserver.crt
+        SSLCertificateKeyFile /etc/ssl/private/mailserver.key
+    </VirtualHost>
+
+##Puis on active le site et on redémarre apache :
+
+    a2ensite webmail
+    /etc/init.d/apache2 reload
